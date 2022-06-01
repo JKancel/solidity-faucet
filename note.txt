@@ -1,0 +1,85 @@
+// Block info
+// Nonce - a hash that when combined with the minHash proofs that
+// the block has gone through proof of work(POW)
+// 8 bytes => 64 bits
+
+blockchain link
+https://andersbrownworth.com/blockchain/blockchain
+
+0x60806040526103e86000557ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff660015534801561003a57600080fd5b506104b88061004a6000396000f3fe
+
+
+60 80 60 40 52 61 03 e8 60 00 55 7f ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff f6 60 01 55 34 80 15 61 00 3a 57 60 00 80 fd 5b 50 61 04 b8 80 61 00 4a 60 00 39 60 00 f3 fe
+ 
+
+// STACK
+0x60 == PUSH instruction => chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://ethereum.github.io/yellowpaper/paper.pdf
+0x52 == MSTORE instruction
+0xfd = REVERT
+...
+
+
+// MEMORY
+
+Memory[0x40] = 0x80 // Free memory pointer
+Memory[0x00] = code to copy
+
+
+// how is Block Header Calculated
+RLP (“recursive length prefix”) encoding is the main serialization format used in Ethereum,
+and is used everywhere - for blocks, transactions, account state data and
+wire protocol messages.
+
+How header is encoded
+https://ethereum.stackexchange.com/questions/67280/block-header-hash-calculation
+
+Encoder
+https://toolkit.abdk.consulting/ethereum#rlp
+
+About RLP encoding
+https://medium.com/coinmonks/data-structure-in-ethereum-episode-1-recursive-length-prefix-rlp-encoding-decoding-d1016832f919
+
+Etherem Live view
+http://ethviewer.live/
+
+
+bits, bytes, words
+https://www.youtube.com/watch?v=Weyv-V8xz0c
+
+EVMs, and Bytecode
+https://www.youtube.com/watch?v=RxL_1AfV7N4
+
+Memory in computer:
+https://www.youtube.com/watch?v=F0Ri2TpRBBg
+
+
+// Truffle :
+
+truffle migrate : build + deploy contract
+truffle compile : just compile
+truffle console : open console (like browser console) 
+
+// Truffle console :
+const instance = await Faucet.deployed() : get instance of Faucet contract
+const funds = await instance.funds() : access to field funds
+const result = await instance.justTesting()
+
+// add funds
+instance.addFunds({value: "20000000000000000"})
+instance.addFunds({from: accounts[0] , value: "20000000000000000"})
+instance.addFunds({from: accounts[0] , value: "2000000000000000000"})
+instance.addFunds({from: accounts[1] , value: "40000000000000000"})
+instance.getAllFunders()
+instance.getFunderAtIndex(0)
+
+// withdraw
+instance.withdraw("500000000000000000", {from: accounts[1]})
+
+// Web3 API instance :
+const instance = new web3.eth.Contract(Faucet.abi, "0xCbf230BfCb4BC68b26baC7F2720570c5A3c9Eb18") : get contract instance with web3 api
+const funds = await instance.methods.funds().call() : get field funds.
+web3.eth.sendTransaction({to:accounts[1], from:accounts[0], value: web3.utils.toWei('1')})
+
+// Storage
+web3.eth.getStorageAt("0x1E9Bfed44D7e2f8bAF438F515C6FB21d5194c3Fe", 0)
+
