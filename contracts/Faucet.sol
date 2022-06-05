@@ -77,7 +77,7 @@ contract Faucet is Owned, Logger, IFaucet {
   function test2() external onlyOwner {
     // some managing stuff that only admin should have access to
   }
-
+ // with array
  // retrieve all funders (cannot get directly all funders from the property)
   // function getAllFunders() public view returns(address[] memory) {
   //   return funders;

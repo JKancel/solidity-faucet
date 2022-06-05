@@ -65,7 +65,7 @@ const funds = await instance.funds() : access to field funds
 const result = await instance.justTesting()
 
 // add funds
-instance.addFunds({value: "20000000000000000"})
+instance.addFunds({value: "2000000000000000000"})
 instance.addFunds({from: accounts[0] , value: "20000000000000000"})
 instance.addFunds({from: accounts[0] , value: "2000000000000000000"})
 instance.addFunds({from: accounts[1] , value: "40000000000000000"})
