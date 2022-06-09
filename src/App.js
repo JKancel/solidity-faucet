@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import Web3 from 'web3';
 import detectEthereumProvider from '@metamask/detect-provider';
@@ -8,15 +8,12 @@ const App = () => {
   const [web3Api, setWeb3Api] = useState({ provider: null, web3: null, contract: null });
   const [account, setAccount] = useState(null);
   const [balance, setBalance] = useState(0);
+  const [shouldReload, reload] = useState(false);
 
-  useEffect(() => {
-    const loadBalance = async () => {
-      const { contract, web3 } = web3Api;
-      const balance = await web3.eth.getBalance(contract.options.address);
-      setBalance(web3Api.web3.utils.fromWei(`${balance}`, "ether"));
-    }
-    web3Api.contract && loadBalance()
-  }, [web3Api]);
+  const reloadEffect = useCallback(() => reload(!shouldReload), [shouldReload]);
+  const setAccountListener = (provider) => {
+    provider.on("accountsChanged", (accounts) => setAccount(accounts[0]));
+  };
 
   useEffect(() => {
     const loadProvider = async () => {
@@ -46,7 +43,7 @@ const App = () => {
         // } catch (e) {
         //   console.error("User denied accounts access !", e);
         // }
-
+        setAccountListener(provider);
         const web3 = new Web3(provider);
         const contract = await loadContract('Faucet', web3);
         console.log("Faucet contract", contract);
@@ -66,6 +63,15 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    const loadBalance = async () => {
+      const { contract, web3 } = web3Api;
+      const balance = await web3.eth.getBalance(contract.options.address);
+      setBalance(web3Api.web3.utils.fromWei(`${balance}`, "ether"));
+    }
+    web3Api.contract && loadBalance()
+  }, [web3Api, shouldReload]);
+
+  useEffect(() => {
     const getAccount = async () => {
       const accounts = await web3Api.web3.eth.getAccounts();
       setAccount(accounts[0]);
@@ -73,7 +79,22 @@ const App = () => {
     web3Api.web3 && getAccount();
   }, [web3Api.web3]);
 
-  console.log(account);
+  const addFunds = useCallback(async () => {
+    const { contract, web3 } = web3Api;
+    await contract.methods.addFunds().send({
+      from: account,
+      value: web3.utils.toWei('1', 'ether')
+    });
+    reloadEffect();
+  }, [account, web3Api, reloadEffect]);
+
+  const withdraw = useCallback(async (amount) => {
+    const { contract, web3 } = web3Api;
+    await contract.methods.withdraw(web3.utils.toWei(`${amount}`, "ether")).send({
+      from: account
+    });
+    reloadEffect();
+  }, [account, web3Api, reloadEffect]);
 
   return (
     <>
@@ -85,8 +106,8 @@ const App = () => {
           <div className="balance-view is-size-2 my-4">
             Current Balance: <strong>{balance}</strong>&nbsp;ETH
           </div>
-          <button className="button is-link mr-2">Donate</button>
-          <button className="button is-primary">Withdraw</button>
+          <button onClick={addFunds} className="button is-link mr-2">Donate 1 eth</button>
+          <button onClick={() => withdraw('0.5')} className="button is-primary">Withdraw</button>
         </div>
       </div>
     </>
