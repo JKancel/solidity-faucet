@@ -12,7 +12,8 @@ export const loadContract = async (name, web3) => {
       Artifact.networks[NETWORK_ID].address
     )
   } catch {
-    console.log(`Contract ${name} cannot be loaded`)
+    console.error(`Contract ${name} cannot be loaded`)
   }
+  console.log("the contract", contract)
   return contract;
 };

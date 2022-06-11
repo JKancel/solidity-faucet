@@ -5,14 +5,16 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { loadContract } from './utils/load-contract';
 
 const App = () => {
-  const [web3Api, setWeb3Api] = useState({ provider: null, web3: null, contract: null });
+  const [web3Api, setWeb3Api] = useState({ provider: null, isProviderLoaded: false, web3: null, contract: null });
   const [account, setAccount] = useState(null);
   const [balance, setBalance] = useState(0);
   const [shouldReload, reload] = useState(false);
 
   const reloadEffect = useCallback(() => reload(!shouldReload), [shouldReload]);
+  const canConnectToContract = account && web3Api.contract;
   const setAccountListener = (provider) => {
-    provider.on("accountsChanged", (accounts) => setAccount(accounts[0]));
+    provider.on("accountsChanged", _ => window.location.reload());
+    provider.on("chainChanged", _ => window.location.reload());
   };
 
   useEffect(() => {
@@ -50,11 +52,16 @@ const App = () => {
 
         setWeb3Api({
           web3,
+          isProviderLoaded: true,
           provider,
           contract
         });
         console.log('Ethereum successfully detected!');
       } else {
+        setWeb3Api(api => ({
+            ...api,
+            isProviderLoaded: true
+        }));
         // if the provider is not detected, detectEthereumProvider resolves to null
         console.error('Please install MetaMask!');
       }
@@ -100,14 +107,30 @@ const App = () => {
     <>
       <div className="faucet-wrapper">
         <div className="faucet">
-          <div className="is-flex align-items is-align-items-center">
-            <span><strong className="mr-2">Account: </strong></span>
-            {account ? <span>{account}</span> : <button onClick={() => web3Api.provider.request({ method: "eth_requestAccounts" })} className='button is-small'>Connect Wallet</button>}</div>
+          { web3Api.isProviderLoaded ? 
+            <div className="is-flex align-items is-align-items-center">
+              <span><strong className="mr-2">Account: </strong></span>
+              {account ? <div>{account}</div> :
+              !web3Api.provider ? 
+              <>
+                <div className="notification is-warning is-size-6 is-rounded">
+                  Wallet is not detected!{` `};
+                  <a target="_blank" rel="noreferrer" href="https://docs.metamask.io">Install Metasmask</a>
+                </div>
+              </> :
+              <button onClick={() => web3Api.provider.request({ method: "eth_requestAccounts" })} className='button is-small'>Connect Wallet</button>}
+            </div> :
+            <span>Looking for Web3...</span>
+          }
           <div className="balance-view is-size-2 my-4">
             Current Balance: <strong>{balance}</strong>&nbsp;ETH
           </div>
-          <button onClick={addFunds} className="button is-link mr-2">Donate 1 eth</button>
-          <button onClick={() => withdraw('0.5')} className="button is-primary">Withdraw</button>
+          { !canConnectToContract && 
+          <i className="is-block">
+            Connect to Ganache
+            </i>}
+          <button disabled={!canConnectToContract} onClick={addFunds} className="button is-link mr-2">Donate 1 eth</button>
+          <button disabled={!canConnectToContract} onClick={() => withdraw('0.5')} className="button is-primary">Withdraw</button>
         </div>
       </div>
     </>
